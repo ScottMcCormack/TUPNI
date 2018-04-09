@@ -51,6 +51,7 @@ def parse_sample_record(input, schema, byteorder):
     """
 
     input_len = len(input)
+    result_list = []
 
     # Read the schema information for parsing the file
     header_byte_size = schema['header_byte_size']
@@ -65,21 +66,21 @@ def parse_sample_record(input, schema, byteorder):
         # Read the record type
         record_type_bytes = input[i:i + record_type_byte_size]
         record_type = int.from_bytes(record_type_bytes, byteorder=byteorder)
-        print(record_type)
-
         i += record_type_byte_size
 
         # Read the record size
         record_size_bytes = input[i: i + record_size_byte_size]
         record_size = int.from_bytes(record_size_bytes, byteorder=byteorder)
-        print(record_size)
-
         i += (record_size - record_type_byte_size)
+
+        result_list.append((record_type, record_size))
+
+    assert (len(result_list) == num_records, "Records found, did not equal records specified in header")
+
+    return result_list
 
 
 def main():
-    # Get the sample input
-
     # Schema for the file input
     schema = {
         "header_byte_size": 4,
@@ -88,6 +89,8 @@ def main():
     }
     byteorder = 'big'
 
+    # Section 3.2: Build a sample
+
     # records consists of tuples represented as:
     # 1.  Record type
     # 2.  Record length
@@ -95,7 +98,8 @@ def main():
     sample_input = build_sample_record(records, schema, byteorder)
 
     # Parse the sample file
-    parse_sample_record(sample_input, schema, byteorder)
+    parsed_results = parse_sample_record(sample_input, schema, byteorder)
+    print(parsed_results)
 
 
 if __name__ == "__main__":
